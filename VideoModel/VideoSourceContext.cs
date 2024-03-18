@@ -30,15 +30,17 @@ public partial class VideoSourceContext : DbContext
         var config = builder.Build();
         optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.UserId).HasName("PK_User");
+        });
+
         modelBuilder.Entity<Video>(entity =>
         {
             entity.HasKey(e => e.VideoId).HasName("PK_Video_1");
-
-            entity.Property(e => e.Timestamp)
-                .IsRowVersion()
-                .IsConcurrencyToken();
 
             entity.HasOne(d => d.User).WithMany(p => p.Videos)
                 .OnDelete(DeleteBehavior.ClientSetNull)

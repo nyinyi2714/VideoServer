@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace VideoModel;
 
-[Table("Video")]
 public partial class Video
 {
     [Key]
@@ -18,7 +17,12 @@ public partial class Video
 
     public int Likes { get; set; }
 
-    public byte[] Timestamp { get; set; } = null!;
+    [Column(TypeName = "datetime")]
+    public DateTime Timestamp { get; set; }
+
+    [StringLength(50)]
+    [Unicode(false)]
+    public string Title { get; set; } = null!;
 
     [StringLength(200)]
     [Unicode(false)]

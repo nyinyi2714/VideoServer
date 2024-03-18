@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace VideoModel;
 
-[Table("User")]
 public partial class User
 {
     [Key]
