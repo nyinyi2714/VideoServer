@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VideoModel;
 using VideoServer.DTO;
 
@@ -20,7 +16,7 @@ namespace VideoServer.Controllers
         {
             var recentVideos = await context.Videos
                 .OrderByDescending(v => v.Timestamp)
-                .Take(8)
+                .Take(4)
                 .Select(v => new VideoDto
                 {
                     VideoId = v.VideoId,
@@ -46,7 +42,7 @@ namespace VideoServer.Controllers
         {
             var popularVideos = await context.Videos
                 .OrderByDescending(v => v.Likes)
-                .Take(8)
+                .Take(4)
                 .Select(v => new VideoDto
                 {
                     VideoId = v.VideoId,
@@ -66,37 +62,35 @@ namespace VideoServer.Controllers
             return popularVideos;
         }
 
-        // GET: api/Videos/by-user/{userId}
-        [HttpGet("by-user/{userId}")]
-        public async Task<ActionResult<IEnumerable<VideoDto>>> GetVideosByUser(int userId)
+        // GET: api/Video/{videoId}
+        [HttpGet("{videoId}")]
+        public async Task<ActionResult<VideoDto>> GetVideo(int videoId)
         {
-            var user = await context.Users
-                .Include(u => u.Videos)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
+            var video = await context.Videos
+                .Where(v => v.VideoId == videoId)
+                .Select(v => new VideoDto
+                {
+                    VideoId = v.VideoId,
+                    Url = v.Url,
+                    Title = v.Title,
+                    Description = v.Description,
+                    Likes = v.Likes,
+                    Timestamp = v.Timestamp,
+                    User = new UserDto
+                    {
+                        UserId = v.User.UserId,
+                        Username = v.User.Username,
+                    }
+                })
+                .FirstOrDefaultAsync();
 
-            if (user == null)
+            if (video == null)
             {
                 return NotFound();
             }
 
-            var videoDtos = user.Videos.Select(v => new VideoDto
-            {
-                VideoId = v.VideoId,
-                Url = v.Url,
-                Title = v.Title,
-                Description = v.Description,
-                Likes = v.Likes,
-                Timestamp = v.Timestamp,
-                User = new UserDto
-                {
-                    UserId = user.UserId,
-                    Username = user.Username,
-                }
-            }).ToList();
-
-            return videoDtos;
+            return video;
         }
-
 
         // DELETE: api/Videos/5
         [HttpDelete("{id}")]
