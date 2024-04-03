@@ -15,7 +15,7 @@ public partial class Video
     [Unicode(false)]
     public string Url { get; set; } = null!;
 
-    public int Likes { get; set; }
+    public int Views { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime Timestamp { get; set; }

@@ -8,7 +8,7 @@ namespace VideoServer.DTO
         public required string Url { get; set; }
         public required string Title { get; set; }
         public required string Description { get; set; }
-        public int Likes { get; set; }
+        public int Views { get; set; }
         public required DateTime Timestamp { get; set; }
         public required UserDto User { get; set; }
     }

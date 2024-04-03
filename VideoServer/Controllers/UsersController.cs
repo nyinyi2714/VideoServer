@@ -38,7 +38,7 @@ namespace VideoServer.Controllers
                 Url = v.Url,
                 Title = v.Title,
                 Description = v.Description,
-                Likes = v.Likes,
+                Views = v.Views,
                 Timestamp = v.Timestamp,
                 User = new UserDto
                 {

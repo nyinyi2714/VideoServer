@@ -23,7 +23,7 @@ namespace VideoServer.Controllers
                     Url = v.Url,
                     Title = v.Title,
                     Description = v.Description,
-                    Likes = v.Likes,
+                    Views = v.Views,
                     Timestamp = v.Timestamp,
                     User = new UserDto
                     {
@@ -41,7 +41,7 @@ namespace VideoServer.Controllers
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetPopularVideos()
         {
             var popularVideos = await context.Videos
-                .OrderByDescending(v => v.Likes)
+                .OrderByDescending(v => v.Views)
                 .Take(4)
                 .Select(v => new VideoDto
                 {
@@ -49,7 +49,7 @@ namespace VideoServer.Controllers
                     Url = v.Url,
                     Title = v.Title,
                     Description = v.Description,
-                    Likes = v.Likes,
+                    Views = v.Views,
                     Timestamp = v.Timestamp,
                     User = new UserDto
                     {
@@ -74,7 +74,7 @@ namespace VideoServer.Controllers
                     Url = v.Url,
                     Title = v.Title,
                     Description = v.Description,
-                    Likes = v.Likes,
+                    Views = v.Views,
                     Timestamp = v.Timestamp,
                     User = new UserDto
                     {

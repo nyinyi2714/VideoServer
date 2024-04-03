@@ -72,9 +72,7 @@ namespace VideoModel.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Title")
                         .IsRequired()
