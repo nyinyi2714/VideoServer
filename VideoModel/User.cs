@@ -23,6 +23,13 @@ public partial class User
     [Unicode(false)]
     public string Password { get; set; } = null!;
 
+    [InverseProperty("Sender")]
+    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+
     [InverseProperty("User")]
     public virtual ICollection<Video> Videos { get; set; } = new List<Video>();
+
+    [ForeignKey("UserId")]
+    [InverseProperty("Users")]
+    public virtual ICollection<ChatRoom> ChatRooms { get; set; } = new List<ChatRoom>();
 }

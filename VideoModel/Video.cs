@@ -15,8 +15,6 @@ public partial class Video
     [Unicode(false)]
     public string Url { get; set; } = null!;
 
-    public int Views { get; set; }
-
     [Column(TypeName = "datetime")]
     public DateTime Timestamp { get; set; }
 
@@ -29,6 +27,8 @@ public partial class Video
     public string Description { get; set; } = null!;
 
     public int UserId { get; set; }
+
+    public int Views { get; set; }
 
     [ForeignKey("UserId")]
     [InverseProperty("Videos")]
