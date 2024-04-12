@@ -16,7 +16,7 @@ namespace VideoServer.Controllers
     {
 
         // GET: api/Users/{userId}
-        [HttpGet("/{userId}")]
+        [HttpGet("{userId}")]
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetVideosByUser(int userId, int skip = 0, int take = 10)
         {
             var user = await context.Users
@@ -50,7 +50,7 @@ namespace VideoServer.Controllers
             return videoDtos;
         }
 
-        [HttpGet("/video-count/{userId}")]
+        [HttpGet("video-count/{userId}")]
         public async Task<ActionResult<int>> GetTotalVideosByUser(int userId)
         {
             // Retrieve the user from the database
