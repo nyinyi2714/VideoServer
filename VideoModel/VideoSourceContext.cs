@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace VideoModel;
 
-public partial class VideoSourceContext : DbContext
+public partial class VideoSourceContext : IdentityDbContext<VideoUser>
 {
     public VideoSourceContext()
     {

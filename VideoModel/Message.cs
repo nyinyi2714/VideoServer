@@ -11,13 +11,13 @@ public partial class Message
     [Key]
     public int MessageId { get; set; }
 
-    public int SenderId { get; set; }
-
     [Unicode(false)]
     public string Text { get; set; } = null!;
 
     [Column(TypeName = "datetime")]
     public DateTime Timestamp { get; set; }
+
+    public int SenderId { get; set; }
 
     public int ChatRoomId { get; set; }
 
