@@ -12,8 +12,8 @@ using VideoModel;
 namespace VideoModel.Migrations
 {
     [DbContext(typeof(VideoGoldenContext))]
-    [Migration("20240421040118_identityuser")]
-    partial class identityuser
+    [Migration("20240421125343_user2")]
+    partial class user2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -187,7 +187,7 @@ namespace VideoModel.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(200)");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("VideoUserId")
                         .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
@@ -197,6 +197,8 @@ namespace VideoModel.Migrations
 
                     b.HasKey("VideoId")
                         .HasName("PK_Video_1");
+
+                    b.HasIndex("VideoUserId");
 
                     b.ToTable("Videos");
                 });
@@ -315,6 +317,22 @@ namespace VideoModel.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("VideoModel.Video", b =>
+                {
+                    b.HasOne("VideoModel.VideoUser", "User")
+                        .WithMany("Videos")
+                        .HasForeignKey("VideoUserId")
+                        .IsRequired()
+                        .HasConstraintName("FK_Videos_AspNetUsers");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("VideoModel.VideoUser", b =>
+                {
+                    b.Navigation("Videos");
                 });
 #pragma warning restore 612, 618
         }

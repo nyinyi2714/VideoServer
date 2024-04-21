@@ -38,11 +38,14 @@ public partial class VideoGoldenContext : IdentityDbContext<VideoUser>
         {
             entity.HasKey(e => e.VideoId).HasName("PK_Video_1");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Videos)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Videos_AspNetUsers");
-        });
+            entity.HasOne<VideoUser>()
+            .WithMany(u => u.Videos)
+            .HasForeignKey(v => v.VideoUserId)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Videos_AspNetUsers");
 
+        });
+        modelBuilder.Entity<VideoUser>().Navigation(e => e.Videos).AutoInclude();
         OnModelCreatingPartial(modelBuilder);
     }
 

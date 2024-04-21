@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VideoModel;
@@ -12,51 +13,39 @@ namespace VideoServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController(VideoGoldenContext context) : ControllerBase
+    public class UsersController(VideoGoldenContext db, UserManager<VideoUser> userManager) : ControllerBase
     {
-        /*
+
         // GET: api/Users/{userId}
         [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<VideoDto>>> GetVideosByUser(int userId, int skip = 0, int take = 10)
+        public async Task<ActionResult<IEnumerable<VideoDto>>> GetVideosByUser(
+            string userId, 
+            int skip = 0, 
+            int take = 10
+        )
         {
-            var user = await context.Users
-                .Include(u => u.Videos)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
+            //VideoUser? user = await userManager.FindByIdAsync(userId);
+            VideoUser? user = await db.Users.FindAsync( userId );
 
             if (user == null)
             {
                 return NotFound();
             }
 
-            var videoDtos = user.Videos
+            List<Video> videoDtos = user.Videos
                 .OrderByDescending(v => v.Timestamp)
                 .Skip(skip)
                 .Take(take)
-                .Select(v => new VideoDto
-                {
-                VideoId = v.VideoId,
-                Url = v.Url,
-                Title = v.Title,
-                Description = v.Description,
-                Views = v.Views,
-                Timestamp = v.Timestamp,
-                User = new UserDto
-                {
-                    UserId = user.UserId,
-                    Username = user.Username,
-                }
-            }).ToList();
+                .ToList();
 
-            return videoDtos;
+            return Ok(videoDtos);
         }
 
         [HttpGet("video-count/{userId}")]
-        public async Task<ActionResult<int>> GetTotalVideosByUser(int userId)
+        public async Task<ActionResult<int>> GetTotalVideosByUser(string userId)
         {
             // Retrieve the user from the database
-            var user = await context.Users
-                .Include(u => u.Videos)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
+            var user = await userManager.FindByIdAsync(userId);
 
             // If the user is not found, return NotFound
             if (user == null)
@@ -65,8 +54,7 @@ namespace VideoServer.Controllers
             }
 
             // Return the total number of videos for the user
-            return user.Videos.Count;
+            return Ok(user.Videos.Count);
         }
-        */
     }
 }

@@ -26,12 +26,11 @@ public partial class Video
     [Unicode(false)]
     public string Description { get; set; } = null!;
 
-    [StringLength(450)]
-    public string UserId { get; set; } = null!;
-
     public int Views { get; set; }
 
-    [ForeignKey("UserId")]
-    [InverseProperty("Videos")]
-    public virtual AspNetUser User { get; set; } = null!;
+    [ForeignKey("VideoUserId")]
+    [StringLength(450)]
+    public string VideoUserId { get; set; } = null!;
+
+    
 }

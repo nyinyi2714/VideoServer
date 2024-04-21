@@ -19,6 +19,7 @@ namespace VideoServer.Controllers
         UserManager<VideoUser> userManager
     ) : ControllerBase
     {
+
         // helper function to retreive user using userManager
         private async Task<UserDto?> GetUserDto(string userId)
         {
@@ -30,7 +31,7 @@ namespace VideoServer.Controllers
 
             var userDto = new UserDto
             {
-                UserId = await userManager.GetUserIdAsync(user),
+                VideoUserId = await userManager.GetUserIdAsync(user),
                 UserName = UserName,
             };
 
@@ -52,7 +53,7 @@ namespace VideoServer.Controllers
             foreach (Video video in recentVideos)
             {
                 // Retrieve the UserDto for the current video
-                UserDto? userDto = await GetUserDto(video.UserId);
+                UserDto? userDto = await GetUserDto(video.VideoUserId);
 
                 if (userDto == null)
                 {
@@ -75,7 +76,7 @@ namespace VideoServer.Controllers
             }
 
 
-            return recentVideosDto;
+            return Ok(recentVideosDto);
         }
 
         // GET: api/Videos/popular
@@ -93,7 +94,7 @@ namespace VideoServer.Controllers
             foreach (Video video in popularVideos)
             {
                 // Retrieve the UserDto for the current video
-                UserDto? userDto = await GetUserDto(video.UserId);
+                UserDto? userDto = await GetUserDto(video.VideoUserId);
 
                 if(userDto == null)
                 {
@@ -131,7 +132,7 @@ namespace VideoServer.Controllers
             }
 
             // Retrieve the UserDto for the current video
-            UserDto? userDto = await GetUserDto(video.UserId);
+            UserDto? userDto = await GetUserDto(video.VideoUserId);
 
             if (userDto == null)
             {
@@ -151,7 +152,7 @@ namespace VideoServer.Controllers
             return Ok(videoDto);
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("Upload")]
         public async Task<ActionResult> UploadVideo(UploadVideoRequest uploadVideoRequest)
         {
@@ -189,16 +190,17 @@ namespace VideoServer.Controllers
                 Url = uploadVideoRequest.Url,
                 Title = uploadVideoRequest.Title,
                 Description = uploadVideoRequest.Description,
-                UserId = userId,
+                VideoUserId = userId,
                 Timestamp = DateTime.Now,
                 Views = 0,
             };
+
+            //user.Videos.Add(newVideo);
 
             db.Videos.Add(newVideo);
             await db.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetVideo), new { videoId = newVideo.VideoId }, "Upload Successful");
         }
-
     }
 }

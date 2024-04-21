@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VideoModel;
 
@@ -11,9 +12,11 @@ using VideoModel;
 namespace VideoModel.Migrations
 {
     [DbContext(typeof(VideoGoldenContext))]
-    partial class VideoGoldenContextModelSnapshot : ModelSnapshot
+    [Migration("20240421125133_user1")]
+    partial class user1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -184,6 +187,10 @@ namespace VideoModel.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("VideoUserId")
                         .IsRequired()
                         .HasMaxLength(450)
@@ -195,7 +202,7 @@ namespace VideoModel.Migrations
                     b.HasKey("VideoId")
                         .HasName("PK_Video_1");
 
-                    b.HasIndex("VideoUserId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Videos");
                 });
@@ -320,7 +327,7 @@ namespace VideoModel.Migrations
                 {
                     b.HasOne("VideoModel.VideoUser", "User")
                         .WithMany("Videos")
-                        .HasForeignKey("VideoUserId")
+                        .HasForeignKey("UserId")
                         .IsRequired()
                         .HasConstraintName("FK_Videos_AspNetUsers");
 

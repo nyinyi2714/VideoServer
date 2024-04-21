@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VideoModel.Migrations
 {
     /// <inheritdoc />
-    public partial class identityuser : Migration
+    public partial class user1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,24 +48,6 @@ namespace VideoModel.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Videos",
-                columns: table => new
-                {
-                    VideoId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Url = table.Column<string>(type: "varchar(200)", unicode: false, maxLength: 200, nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime", nullable: false),
-                    Title = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "varchar(200)", unicode: false, maxLength: 200, nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
-                    Views = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Video_1", x => x.VideoId);
                 });
 
             migrationBuilder.CreateTable(
@@ -174,6 +156,30 @@ namespace VideoModel.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Videos",
+                columns: table => new
+                {
+                    VideoId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Url = table.Column<string>(type: "varchar(200)", unicode: false, maxLength: 200, nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime", nullable: false),
+                    Title = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "varchar(200)", unicode: false, maxLength: 200, nullable: false),
+                    Views = table.Column<int>(type: "int", nullable: false),
+                    VideoUserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Video_1", x => x.VideoId);
+                    table.ForeignKey(
+                        name: "FK_Videos_AspNetUsers",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -212,6 +218,11 @@ namespace VideoModel.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Videos_UserId",
+                table: "Videos",
+                column: "UserId");
         }
 
         /// <inheritdoc />

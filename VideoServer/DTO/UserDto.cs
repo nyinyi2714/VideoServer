@@ -2,7 +2,7 @@
 {
     public class UserDto
     {
-        public required string UserId { get; set; }
+        public required string VideoUserId { get; set; }
         public required string UserName { get; set; }
     }
 }

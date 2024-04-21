@@ -46,9 +46,9 @@ namespace VideoServer.Controllers
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
             // Check if the email already exists
-            if (await userManager.FindByEmailAsync(registerRequest.Email) is not null)
+            if (await userManager.FindByNameAsync(registerRequest.UserName) is not null)
             {
-                return Conflict("Email address is already registered.");
+                return Conflict("Username is already registered.");
             }
 
 
