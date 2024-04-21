@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Writers;
 using NuGet.Packaging.Signing;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using VideoModel;
 using VideoServer.DTO;
@@ -37,7 +38,7 @@ namespace VideoServer.Controllers
         }
 
         // GET: api/Videos/recent
-        [HttpGet("recent")]
+        [HttpGet("Recent")]
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetRecentVideos()
         {
             // Materialize the query to retrieve the list of videos
@@ -78,7 +79,7 @@ namespace VideoServer.Controllers
         }
 
         // GET: api/Videos/popular
-        [HttpGet("popular")]
+        [HttpGet("Popular")]
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetPopularVideos()
         {
             // Materialize the query to retrieve the list of videos
@@ -151,42 +152,44 @@ namespace VideoServer.Controllers
         }
 
         //[Authorize]
-        [HttpPost("upload")]
+        [HttpPost("Upload")]
         public async Task<ActionResult> UploadVideo(UploadVideoRequest uploadVideoRequest)
         {
-            /*
-            // Retrieve the token from the Authorization header
+            // Get the Authorization header
             string? authHeader = HttpContext.Request.Headers.Authorization;
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
-                return Unauthorized("No valid token provided.");
+                return Unauthorized("Authorization header missing or invalid.");
             }
 
-            // Extract the token part (remove "Bearer " prefix)
-            string token = authHeader["Bearer ".Length..].Trim();
+            // Extract the JWT token
+            string tokenString = authHeader["Bearer ".Length..].Trim();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            JwtSecurityToken token = tokenHandler.ReadJwtToken(tokenString);
 
-            // Extract userId from the claims
-            string? userIdClaim = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null)
+
+            // Find the claim that represents the user ID
+            string? userName = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            if (userName == null)
             {
-                return BadRequest("userId claim not found.");
+                return BadRequest("UserName not found in token.");
             }
-            */
 
             // Check if the user exists
-            VideoUser? user = await userManager.FindByIdAsync(uploadVideoRequest.UserId);
+            VideoUser? user = await userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                return NotFound($"User with ID {uploadVideoRequest.UserId} not found.");
+                return NotFound($"User with Username '{userName}' not found.");
             }
 
+            string? userId = await userManager.GetUserIdAsync(user);
 
             Video newVideo = new()
             {
                 Url = uploadVideoRequest.Url,
                 Title = uploadVideoRequest.Title,
                 Description = uploadVideoRequest.Description,
-                UserId = uploadVideoRequest.UserId,
+                UserId = userId,
                 Timestamp = DateTime.Now,
                 Views = 0,
             };
