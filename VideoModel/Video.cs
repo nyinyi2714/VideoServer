@@ -30,4 +30,8 @@ public partial class Video
     public string UserId { get; set; } = null!;
 
     public int Views { get; set; }
+
+    [ForeignKey("UserId")]
+    [InverseProperty("Videos")]
+    public virtual AspNetUser User { get; set; } = null!;
 }

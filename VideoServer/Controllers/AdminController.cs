@@ -43,7 +43,7 @@ namespace VideoServer.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<ActionResult> Register(RegisterRequest registerRequest)
+        public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
             // Check if the email already exists
             if (await userManager.FindByEmailAsync(registerRequest.Email) is not null)
@@ -67,34 +67,15 @@ namespace VideoServer.Controllers
             }
 
             await db.SaveChangesAsync();
-            return Ok("User registered successfully.");
-        }
 
-        [HttpPost("SeedUser")]
-        public async Task<ActionResult> SeedUser()
-        {
-            (string name, string email) = ("user1", "comp584@csun.edu");
-            VideoUser user = new()
-            {
-                UserName = name,
-                Email = email,
-                SecurityStamp = Guid.NewGuid().ToString()
-            };
-            if (await userManager.FindByNameAsync(name) is not null)
-            {
-                user.UserName = "user2";
-            }
-            var result = await userManager.CreateAsync(user, "Abcde1$");
-            if (!result.Succeeded)
-            {
-                var errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
-                return BadRequest($"Error(s): {errorMessages}");
-            }
-            user.EmailConfirmed = true;
-            user.LockoutEnabled = false;
-            await db.SaveChangesAsync();
+            JwtSecurityToken token = await jwtHandler.GetTokenAsync(user);
+            string jwtString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return Ok();
+            return Ok(new RegisterResult
+            {
+                Success = true,
+                Token = jwtString,
+            });
         }
     }
 }

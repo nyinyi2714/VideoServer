@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace VideoModel;
 
@@ -19,8 +20,15 @@ public partial class VideoGoldenContext : IdentityDbContext<VideoUser>
     public virtual DbSet<Video> Videos { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=VideoGolden;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+    {
+        if (optionsBuilder.IsConfigured)
+        {
+            return;
+        }
+        IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+        var config = builder.Build();
+        optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +37,10 @@ public partial class VideoGoldenContext : IdentityDbContext<VideoUser>
         modelBuilder.Entity<Video>(entity =>
         {
             entity.HasKey(e => e.VideoId).HasName("PK_Video_1");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Videos)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Videos_AspNetUsers");
         });
 
         OnModelCreatingPartial(modelBuilder);
