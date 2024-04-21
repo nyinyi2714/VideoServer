@@ -16,12 +16,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSignalR();
-builder.Services.AddDbContext<VideoSourceContext>(options =>
+builder.Services.AddDbContext<VideoGoldenContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
 builder.Services.AddIdentity<VideoUser, IdentityRole>()
-    .AddEntityFrameworkStores<VideoSourceContext>();
+    .AddEntityFrameworkStores<VideoGoldenContext>();
 
 builder.Services.AddAuthentication(options =>
 {

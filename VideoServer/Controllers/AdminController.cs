@@ -11,6 +11,7 @@ namespace VideoServer.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController(
+        VideoGoldenContext db,
         UserManager<VideoUser> userManager,
         JwtHandler jwtHandler
     ) : ControllerBase
@@ -42,7 +43,7 @@ namespace VideoServer.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<ActionResult> register(RegisterRequest registerRequest)
+        public async Task<ActionResult> Register(RegisterRequest registerRequest)
         {
             // Check if the email already exists
             if (await userManager.FindByEmailAsync(registerRequest.Email) is not null)
@@ -56,8 +57,6 @@ namespace VideoServer.Controllers
                 UserName = registerRequest.UserName,
                 Email = registerRequest.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                EmailConfirmed = true,
-                LockoutEnabled = false,
             };
 
             IdentityResult result = await userManager.CreateAsync(user, registerRequest.Password);
@@ -67,7 +66,35 @@ namespace VideoServer.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create user.");
             }
 
+            await db.SaveChangesAsync();
             return Ok("User registered successfully.");
+        }
+
+        [HttpPost("SeedUser")]
+        public async Task<ActionResult> SeedUser()
+        {
+            (string name, string email) = ("user1", "comp584@csun.edu");
+            VideoUser user = new()
+            {
+                UserName = name,
+                Email = email,
+                SecurityStamp = Guid.NewGuid().ToString()
+            };
+            if (await userManager.FindByNameAsync(name) is not null)
+            {
+                user.UserName = "user2";
+            }
+            var result = await userManager.CreateAsync(user, "Abcde1$");
+            if (!result.Succeeded)
+            {
+                var errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
+                return BadRequest($"Error(s): {errorMessages}");
+            }
+            user.EmailConfirmed = true;
+            user.LockoutEnabled = false;
+            await db.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }

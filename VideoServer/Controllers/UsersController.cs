@@ -12,9 +12,9 @@ namespace VideoServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController(VideoSourceContext context) : ControllerBase
+    public class UsersController(VideoGoldenContext context) : ControllerBase
     {
-
+        /*
         // GET: api/Users/{userId}
         [HttpGet("{userId}")]
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetVideosByUser(int userId, int skip = 0, int take = 10)
@@ -67,41 +67,6 @@ namespace VideoServer.Controllers
             // Return the total number of videos for the user
             return user.Videos.Count;
         }
-
-
-        // POST: api/Users
-        [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
-        {
-            if (UserExists(user.UserId))
-            {
-                return BadRequest();
-            }
-            context.Users.Add(user);
-            await context.SaveChangesAsync();
-
-            return CreatedAtAction("GetUser", new { id = user.UserId }, user);
-        }
-
-        // DELETE: api/Users/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var user = await context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            context.Users.Remove(user);
-            await context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool UserExists(int id)
-        {
-            return context.Users.Any(e => e.UserId == id);
-        }
+        */
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VideoModel;
 using VideoServer.DTO;
@@ -7,34 +8,61 @@ namespace VideoServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class VideosController(VideoSourceContext context) : ControllerBase
+    public class VideosController(
+        VideoGoldenContext context,
+        UserManager<VideoUser> userManager
+    ) : ControllerBase
     {
+        // helper function to retreive user using userManager
+        private async Task<UserDto> GetUserDto(string userId)
+        {
+            VideoUser? user = await userManager.FindByIdAsync(userId);
+            var userDto = new UserDto
+            {
+                UserId = await userManager.GetUserIdAsync(user),
+                UserName = await userManager.GetUserNameAsync(user)
+            };
+
+            return userDto;
+        }
 
         // GET: api/Videos/recent
         [HttpGet("recent")]
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetRecentVideos()
         {
-            var recentVideos = await context.Videos
+            // Materialize the query to retrieve the list of videos
+            List<Video> recentVideos = await context.Videos
                 .OrderByDescending(v => v.Timestamp)
                 .Take(4)
-                .Select(v => new VideoDto
-                {
-                    VideoId = v.VideoId,
-                    Url = v.Url,
-                    Title = v.Title,
-                    Description = v.Description,
-                    Views = v.Views,
-                    Timestamp = v.Timestamp,
-                    User = new UserDto
-                    {
-                        UserId = v.User.UserId,
-                        Username = v.User.Username,
-                    }
-                })
                 .ToListAsync();
 
-            return recentVideos;
+            List<VideoDto> recentVideosDto = new List<VideoDto>();
+
+            foreach (var video in recentVideos)
+            {
+                // Retrieve the UserDto for the current video
+                UserDto userDto = await GetUserDto(video.UserId);
+
+                // Construct the VideoDto object and assign the UserDto
+                var videoDto = new VideoDto
+                {
+                    VideoId = video.VideoId,
+                    Url = video.Url,
+                    Title = video.Title,
+                    Description = video.Description,
+                    Views = video.Views,
+                    Timestamp = video.Timestamp,
+                    User = userDto
+                };
+
+                recentVideosDto.Add(videoDto);
+            }
+
+
+            return recentVideosDto;
         }
+
+        /*
 
         // GET: api/Videos/popular
         [HttpGet("popular")]
@@ -107,5 +135,7 @@ namespace VideoServer.Controllers
 
             return NoContent();
         }
+
+        */
     }
 }
