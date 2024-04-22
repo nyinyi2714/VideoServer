@@ -24,12 +24,19 @@ namespace VideoServer.Controllers
             int take = 10
         )
         {
-            //VideoUser? user = await userManager.FindByIdAsync(userId);
-            VideoUser? user = await db.Users.FindAsync( userId );
+            /*
+            VideoUser? user = await userManager.Users
+                .Where(u => u.Id == userId)
+                .Include(u => u.Videos)
+                .SingleOrDefaultAsync();
+            */
+
+            VideoUser? user = await userManager.FindByIdAsync(userId);
+
 
             if (user == null)
             {
-                return NotFound();
+                return NotFound("User Not found");
             }
 
             List<Video> videoDtos = user.Videos
