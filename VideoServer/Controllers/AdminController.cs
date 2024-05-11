@@ -19,19 +19,19 @@ namespace VideoServer.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
-            VideoUser? user = await userManager.FindByEmailAsync(loginRequest.Email);
-            if (user == null)
+            VideoUser? identityUser = await userManager.FindByEmailAsync(loginRequest.Email);
+            if (identityUser == null)
             {
                 return Unauthorized("Incorrect Email or Password");
             }
 
-            bool success = await userManager.CheckPasswordAsync(user, loginRequest.Password);
+            bool success = await userManager.CheckPasswordAsync(identityUser, loginRequest.Password);
             if (!success)
             {
                 return Unauthorized("Incorrect Email or Password");
             }
 
-            JwtSecurityToken token = await jwtHandler.GetTokenAsync(user);
+            JwtSecurityToken token = await jwtHandler.GetTokenAsync(identityUser);
             string jwtString = new JwtSecurityTokenHandler().WriteToken(token);
 
             return Ok(new LoginResult
@@ -52,23 +52,29 @@ namespace VideoServer.Controllers
             }
 
 
-            VideoUser user = new()
+            VideoUser identityUser = new()
             {
                 UserName = registerRequest.UserName,
                 Email = registerRequest.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
 
-            IdentityResult result = await userManager.CreateAsync(user, registerRequest.Password);
+            IdentityResult result = await userManager.CreateAsync(identityUser, registerRequest.Password);
 
             if (!result.Succeeded) 
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create user.");
             }
 
+            RegisteredUser user = new()
+            {
+                Username = registerRequest.UserName,
+            };
+
+            db.RegisteredUsers.Add(user);
             await db.SaveChangesAsync();
 
-            JwtSecurityToken token = await jwtHandler.GetTokenAsync(user);
+            JwtSecurityToken token = await jwtHandler.GetTokenAsync(identityUser);
             string jwtString = new JwtSecurityTokenHandler().WriteToken(token);
 
             return Ok(new RegisterResult

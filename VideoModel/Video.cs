@@ -28,9 +28,9 @@ public partial class Video
 
     public int Views { get; set; }
 
-    [ForeignKey("VideoUserId")]
-    [StringLength(450)]
-    public string VideoUserId { get; set; } = null!;
+    public required string Username { get; set; }
 
-    
+    [ForeignKey("Username")]
+    [InverseProperty("Videos")]
+    public virtual RegisteredUser RegisteredUser { get; set; } = null!;
 }

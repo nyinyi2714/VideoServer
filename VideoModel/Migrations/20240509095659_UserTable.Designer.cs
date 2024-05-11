@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VideoModel;
 
@@ -11,16 +12,15 @@ using VideoModel;
 namespace VideoModel.Migrations
 {
     [DbContext(typeof(VideoGoldenContext))]
-    partial class VideoGoldenContextModelSnapshot : ModelSnapshot
+    [Migration("20240509095659_UserTable")]
+    partial class UserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.4")
-                .HasAnnotation("Proxies:ChangeTracking", false)
-                .HasAnnotation("Proxies:CheckEquality", false)
-                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -158,15 +158,15 @@ namespace VideoModel.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("VideoModel.RegisteredUser", b =>
+            modelBuilder.Entity("VideoModel.User", b =>
                 {
-                    b.Property<string>("Username")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("IdentityUserId")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
 
-                    b.HasKey("Username");
+                    b.HasKey("IdentityUserId");
 
-                    b.ToTable("RegisteredUsers");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("VideoModel.Video", b =>
@@ -183,6 +183,10 @@ namespace VideoModel.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<string>("IdentityUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(36)");
+
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime");
 
@@ -198,16 +202,12 @@ namespace VideoModel.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(200)");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<int>("Views")
                         .HasColumnType("int");
 
                     b.HasKey("VideoId");
 
-                    b.HasIndex("Username");
+                    b.HasIndex("IdentityUserId");
 
                     b.ToTable("Videos");
                 });
@@ -330,16 +330,16 @@ namespace VideoModel.Migrations
 
             modelBuilder.Entity("VideoModel.Video", b =>
                 {
-                    b.HasOne("VideoModel.RegisteredUser", "RegisteredUser")
+                    b.HasOne("VideoModel.User", "User")
                         .WithMany("Videos")
-                        .HasForeignKey("Username")
+                        .HasForeignKey("IdentityUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("RegisteredUser");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("VideoModel.RegisteredUser", b =>
+            modelBuilder.Entity("VideoModel.User", b =>
                 {
                     b.Navigation("Videos");
                 });

@@ -11,6 +11,5 @@ namespace VideoModel
 {
     public class VideoUser: IdentityUser
     {
-        public virtual ICollection<Video> Videos { get; set; } = new List<Video>();
     }
 }

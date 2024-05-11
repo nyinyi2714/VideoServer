@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.OpenApi.Writers;
 using NuGet.Packaging.Signing;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,106 +21,6 @@ namespace VideoServer.Controllers
     ) : ControllerBase
     {
 
-        // helper function to retreive user using userManager
-        private async Task<UserDto?> GetUserDto(string userId)
-        {
-            VideoUser? user = await userManager.FindByIdAsync(userId);
-            if(user == null) { return null; }
-
-            string? UserName = await userManager.GetUserNameAsync(user);
-            if(UserName == null) { return null; }
-
-            var userDto = new UserDto
-            {
-                VideoUserId = await userManager.GetUserIdAsync(user),
-                UserName = UserName,
-            };
-
-            return userDto;
-        }
-
-        // GET: api/Videos/recent
-        [HttpGet("Recent")]
-        public async Task<ActionResult<IEnumerable<VideoDto>>> GetRecentVideos()
-        {
-            // Materialize the query to retrieve the list of videos
-            List<Video> recentVideos = await db.Videos
-                .OrderByDescending(v => v.Timestamp)
-                .Take(4)
-                .ToListAsync();
-
-            List<VideoDto> recentVideosDto = [];
-
-            foreach (Video video in recentVideos)
-            {
-                // Retrieve the UserDto for the current video
-                UserDto? userDto = await GetUserDto(video.VideoUserId);
-
-                if (userDto == null)
-                {
-                    return NotFound($"User not found for Video ID: {video.VideoId}");
-                }
-
-                // Construct the VideoDto object and assign the UserDto
-                var videoDto = new VideoDto
-                {
-                    VideoId = video.VideoId,
-                    Url = video.Url,
-                    Title = video.Title,
-                    Description = video.Description,
-                    Views = video.Views,
-                    Timestamp = video.Timestamp,
-                    User = userDto
-                };
-
-                recentVideosDto.Add(videoDto);
-            }
-
-
-            return Ok(recentVideosDto);
-        }
-
-        // GET: api/Videos/popular
-        [HttpGet("Popular")]
-        public async Task<ActionResult<IEnumerable<VideoDto>>> GetPopularVideos()
-        {
-            // Materialize the query to retrieve the list of videos
-            var popularVideos = await db.Videos
-                .OrderByDescending(v => v.Views)
-                .Take(4)
-                .ToListAsync();
-
-            List<VideoDto> popularVideosDto = [];
-
-            foreach (Video video in popularVideos)
-            {
-                // Retrieve the UserDto for the current video
-                UserDto? userDto = await GetUserDto(video.VideoUserId);
-
-                if(userDto == null)
-                {
-                    return NotFound($"User not found for Video ID: {video.VideoId}");
-                }
-
-                // Construct the VideoDto object and assign the UserDto
-                var videoDto = new VideoDto
-                {
-                    VideoId = video.VideoId,
-                    Url = video.Url,
-                    Title = video.Title,
-                    Description = video.Description,
-                    Views = video.Views,
-                    Timestamp = video.Timestamp,
-                    User = userDto
-                };
-
-                popularVideosDto.Add(videoDto);
-            }
-
-            return Ok(popularVideosDto);
-        }
-        
-
         // GET: api/Video/{videoId}
         [HttpGet("{videoId}")]
         public async Task<ActionResult<VideoDto>> GetVideo(int videoId)
@@ -131,14 +32,6 @@ namespace VideoServer.Controllers
                 return NotFound();
             }
 
-            // Retrieve the UserDto for the current video
-            UserDto? userDto = await GetUserDto(video.VideoUserId);
-
-            if (userDto == null)
-            {
-                return NotFound($"User not found for Video ID: {video.VideoId}");
-            }
-
             VideoDto videoDto = new()
             {
                 VideoId = video.VideoId,
@@ -146,7 +39,7 @@ namespace VideoServer.Controllers
                 Timestamp = video.Timestamp,
                 Description = video.Description,
                 Title = video.Title,
-                User = userDto,
+                Username = video.Username,
             };
 
             return Ok(videoDto);
@@ -177,30 +70,84 @@ namespace VideoServer.Controllers
             }
 
             // Check if the user exists
-            VideoUser? user = await userManager.FindByNameAsync(userName);
-            if (user == null)
+            VideoUser? identityUser = await userManager.FindByNameAsync(userName);
+            if (identityUser == null)
             {
                 return NotFound($"User with Username '{userName}' not found.");
             }
-
-            string? userId = await userManager.GetUserIdAsync(user);
 
             Video newVideo = new()
             {
                 Url = uploadVideoRequest.Url,
                 Title = uploadVideoRequest.Title,
                 Description = uploadVideoRequest.Description,
-                VideoUserId = userId,
                 Timestamp = DateTime.Now,
                 Views = 0,
+                Username = userName,
             };
-
-            //user.Videos.Add(newVideo);
 
             db.Videos.Add(newVideo);
             await db.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetVideo), new { videoId = newVideo.VideoId }, "Upload Successful");
         }
+
+        // GET: api/Videos/recent
+        [HttpGet("Recent")]
+        public async Task<ActionResult<IEnumerable<VideoDto>>> GetRecentVideos()
+        {
+            // Materialize the query to retrieve the list of videos
+            List<VideoDto> recentVideos = await db.Videos
+                .OrderByDescending(v => v.Timestamp)
+                .Take(4)
+                .Select(v => new VideoDto
+                {
+                    VideoId = v.VideoId,
+                    Url = v.Url,
+                    Title = v.Title,
+                    Description = v.Description,
+                    Timestamp = DateTime.Now,
+                    Views = v.Views,
+                    Username = v.Username,
+                })
+                .ToListAsync();
+
+            return Ok(recentVideos);
+        }
+
+        /*
+        // GET: api/Videos/popular
+        [HttpGet("Popular")]
+        public async Task<ActionResult<IEnumerable<VideoDto>>> GetPopularVideos()
+        {
+            // Materialize the query to retrieve the list of videos
+            var popularVideos = await db.Videos
+                .OrderByDescending(v => v.Views)
+                .Take(4)
+                .ToListAsync();
+
+            List<VideoDto> popularVideosDto = [];
+
+            foreach (Video video in popularVideos)
+            {
+
+                // Construct the VideoDto object and assign the UserDto
+                var videoDto = new VideoDto
+                {
+                    VideoId = video.VideoId,
+                    Url = video.Url,
+                    Title = video.Title,
+                    Description = video.Description,
+                    Views = video.Views,
+                    Timestamp = video.Timestamp,
+                    User = userDto
+                };
+
+                popularVideosDto.Add(videoDto);
+            }
+
+            return Ok(popularVideosDto);
+        }
+        */
     }
 }

@@ -18,6 +18,7 @@ public partial class VideoGoldenContext : IdentityDbContext<VideoUser>
     }
 
     public virtual DbSet<Video> Videos { get; set; }
+    public DbSet<RegisteredUser> RegisteredUsers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -27,25 +28,19 @@ public partial class VideoGoldenContext : IdentityDbContext<VideoUser>
         }
         IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
         var config = builder.Build();
-        optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
+        optionsBuilder
+            .UseLazyLoadingProxies()
+            .UseSqlServer(config.GetConnectionString("DefaultConnection"));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Video>(entity =>
-        {
-            entity.HasKey(e => e.VideoId).HasName("PK_Video_1");
-
-            entity.HasOne<VideoUser>()
+        modelBuilder.Entity<Video>()
+            .HasOne(v => v.RegisteredUser)
             .WithMany(u => u.Videos)
-            .HasForeignKey(v => v.VideoUserId)
-            .OnDelete(DeleteBehavior.ClientSetNull)
-            .HasConstraintName("FK_Videos_AspNetUsers");
-
-        });
-        modelBuilder.Entity<VideoUser>().Navigation(e => e.Videos).AutoInclude();
+            .HasForeignKey(v => v.Username);
         OnModelCreatingPartial(modelBuilder);
     }
 

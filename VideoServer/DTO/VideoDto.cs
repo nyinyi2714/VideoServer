@@ -10,6 +10,6 @@ namespace VideoServer.DTO
         public required string Description { get; set; }
         public int Views { get; set; }
         public required DateTime Timestamp { get; set; }
-        public required UserDto User { get; set; }
+        public required string Username { get; set; }
     }
 }
