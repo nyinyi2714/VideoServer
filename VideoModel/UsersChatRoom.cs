@@ -6,16 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace VideoModel;
 
-public partial class RegisteredUser
+[Keyless]
+public partial class UsersChatRoom
 {
-    [Key]
     [StringLength(50)]
     public string Username { get; set; } = null!;
 
-    [InverseProperty("RegisteredUser")]
-    public virtual ICollection<Video> Videos { get; set; } = new List<Video>();
+    public int ChatRoomId { get; set; }
 
     [ForeignKey("Username")]
-    [InverseProperty("RegisteredUsers")]
-    public virtual ICollection<ChatRoom> ChatRooms { get; set; } = new List<ChatRoom>();
+    public virtual RegisteredUser UsernameNavigation { get; set; } = null!;
 }
