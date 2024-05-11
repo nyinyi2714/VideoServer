@@ -28,7 +28,8 @@ public partial class Video
 
     public int Views { get; set; }
 
-    public required string Username { get; set; }
+    [StringLength(50)]
+    public string Username { get; set; } = null!;
 
     [ForeignKey("Username")]
     [InverseProperty("Videos")]

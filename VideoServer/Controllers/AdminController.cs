@@ -46,7 +46,7 @@ namespace VideoServer.Controllers
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
             // Check if the email already exists
-            if (await userManager.FindByNameAsync(registerRequest.UserName) is not null)
+            if (await userManager.FindByNameAsync(registerRequest.Username) is not null)
             {
                 return Conflict("Username is already registered.");
             }
@@ -54,7 +54,7 @@ namespace VideoServer.Controllers
 
             VideoUser identityUser = new()
             {
-                UserName = registerRequest.UserName,
+                UserName = registerRequest.Username,
                 Email = registerRequest.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
@@ -68,7 +68,7 @@ namespace VideoServer.Controllers
 
             RegisteredUser user = new()
             {
-                Username = registerRequest.UserName,
+                Username = registerRequest.Username,
             };
 
             db.RegisteredUsers.Add(user);

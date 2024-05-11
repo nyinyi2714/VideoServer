@@ -14,10 +14,10 @@ namespace VideoServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController(VideoGoldenContext db, UserManager<VideoUser> userManager) : ControllerBase
+    public class UsersController(VideoGoldenContext db) : ControllerBase
     {
    
-        [HttpGet("User/{username}")]
+        [HttpGet("{username}")]
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetVideosByUser(
             string username, 
             int skip = 0, 
@@ -25,6 +25,7 @@ namespace VideoServer.Controllers
         )
         {
             RegisteredUser? user = await db.RegisteredUsers
+                .Include(u => u.Videos)
                 .FirstOrDefaultAsync(u => u.Username == username);
 
             // Check if the user exists
@@ -35,10 +36,10 @@ namespace VideoServer.Controllers
 
             // Fetch the videos related to the user, applying pagination
             var videos = user.Videos
-                .OrderByDescending(v => v.Timestamp)
-                .Skip(skip)
-                .Take(take)
-                .Select(v => new VideoDto
+               .OrderByDescending(v => v.Timestamp)
+               .Skip(skip) 
+               .Take(take)
+                .Select(v => new VideoDto 
                 {
                     VideoId = v.VideoId,
                     Url = v.Url,
@@ -46,16 +47,15 @@ namespace VideoServer.Controllers
                     Description = v.Description,
                     Views = v.Views,
                     Timestamp = v.Timestamp,
-                    Username = username,
-                })
-                .ToList();
+                    Username = v.Username
+                });
 
             // Return the list of VideoDto
             return Ok(videos);
         }
 
 
-        [HttpGet("Video-Count/{username}")]
+        [HttpGet("VideoCount/{username}")]
         public async Task<ActionResult<int>> GetTotalVideosByUser(string username)
         {
             RegisteredUser? user = await db.RegisteredUsers
