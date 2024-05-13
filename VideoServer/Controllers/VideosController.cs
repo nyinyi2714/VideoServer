@@ -15,34 +15,50 @@ namespace VideoServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class VideosController(
-        VideoGoldenContext db,
-        UserManager<VideoUser> userManager
-    ) : ControllerBase
+    public class VideosController(VideoGoldenContext db) : ControllerBase
     {
 
         // GET: api/Video/{videoId}
         [HttpGet("{videoId}")]
         public async Task<ActionResult<VideoDto>> GetVideo(int videoId)
         {
-            Video? video = await db.Videos.FindAsync(videoId);
-
-            if (video == null)
+            try
             {
-                return NotFound();
+                // Retrieve the video from the database
+                Video? video = await db.Videos.FindAsync(videoId);
+
+                // Check if the video exists
+                if (video == null)
+                {
+                    return NotFound();
+                }
+
+                // Update the view count
+                video.Views += 1;
+
+                // Save changes to the database
+                await db.SaveChangesAsync();
+
+                // Create a VideoDto object
+                VideoDto videoDto = new VideoDto
+                {
+                    VideoId = video.VideoId,
+                    Url = video.Url,
+                    Timestamp = video.Timestamp,
+                    Description = video.Description,
+                    Views = video.Views,
+                    Title = video.Title,
+                    Username = video.Username
+                };
+
+                // Return the VideoDto
+                return Ok(videoDto);
             }
-
-            VideoDto videoDto = new()
+            catch (Exception ex)
             {
-                VideoId = video.VideoId,
-                Url = video.Url,
-                Timestamp = video.Timestamp,
-                Description = video.Description,
-                Title = video.Title,
-                Username = video.Username,
-            };
-
-            return Ok(videoDto);
+                // Log the exception or handle it appropriately
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
+            }
         }
 
         [Authorize]
@@ -63,17 +79,20 @@ namespace VideoServer.Controllers
 
 
             // Find the claim that represents the user ID
-            string? userName = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-            if (userName == null)
+            string? username = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            if (username == null)
             {
                 return BadRequest("UserName not found in token.");
             }
 
+            RegisteredUser? user = await db.RegisteredUsers
+            .Include(u => u.Videos)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
             // Check if the user exists
-            VideoUser? identityUser = await userManager.FindByNameAsync(userName);
-            if (identityUser == null)
+            if (user == null)
             {
-                return NotFound($"User with Username '{userName}' not found.");
+                return NotFound($"User with username {username} not found.");
             }
 
             Video newVideo = new()
@@ -83,7 +102,7 @@ namespace VideoServer.Controllers
                 Description = uploadVideoRequest.Description,
                 Timestamp = DateTime.Now,
                 Views = 0,
-                Username = userName,
+                Username = username,
             };
 
             db.Videos.Add(newVideo);
@@ -106,7 +125,7 @@ namespace VideoServer.Controllers
                     Url = v.Url,
                     Title = v.Title,
                     Description = v.Description,
-                    Timestamp = DateTime.Now,
+                    Timestamp = v.Timestamp,
                     Views = v.Views,
                     Username = v.Username,
                 })
@@ -115,7 +134,6 @@ namespace VideoServer.Controllers
             return Ok(recentVideos);
         }
 
-        /*
         // GET: api/Videos/popular
         [HttpGet("Popular")]
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetPopularVideos()
@@ -140,7 +158,7 @@ namespace VideoServer.Controllers
                     Description = video.Description,
                     Views = video.Views,
                     Timestamp = video.Timestamp,
-                    User = userDto
+                    Username = video.Username,
                 };
 
                 popularVideosDto.Add(videoDto);
@@ -148,6 +166,5 @@ namespace VideoServer.Controllers
 
             return Ok(popularVideosDto);
         }
-        */
     }
 }

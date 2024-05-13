@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -18,7 +20,7 @@ namespace VideoServer.Controllers
     {
    
         [HttpGet("{username}")]
-        public async Task<ActionResult<IEnumerable<VideoDto>>> GetVideosByUser(
+        public async Task<ActionResult<IEnumerable<UserProfile>>> GetUserProfile(
             string username, 
             int skip = 0, 
             int take = 10
@@ -50,26 +52,14 @@ namespace VideoServer.Controllers
                     Username = v.Username
                 });
 
-            // Return the list of VideoDto
-            return Ok(videos);
-        }
-
-
-        [HttpGet("VideoCount/{username}")]
-        public async Task<ActionResult<int>> GetTotalVideosByUser(string username)
-        {
-            RegisteredUser? user = await db.RegisteredUsers
-                .Include(u => u.Videos) // Ensure that the Videos navigation property is included
-                .FirstOrDefaultAsync(u => u.Username == username);
-
-            // If the user is not found, return NotFound
-            if (user == null)
+            UserProfile userProfile = new()
             {
-                return NotFound();
-            }
+                Username = username,
+                Videos = videos.ToList(),
+            };
 
-            // Return the total number of videos for the user
-            return Ok(user.Videos.Count);
+            // Return the list of VideoDto
+            return Ok(userProfile);
         }
     }
 }

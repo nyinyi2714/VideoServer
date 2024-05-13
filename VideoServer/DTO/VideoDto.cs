@@ -1,6 +1,4 @@
-﻿using NuGet.Packaging.Signing;
-
-namespace VideoServer.DTO
+﻿namespace VideoServer.DTO
 {
     public class VideoDto
     {
