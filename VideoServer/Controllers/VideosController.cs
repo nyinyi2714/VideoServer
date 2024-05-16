@@ -1,25 +1,7 @@
 ﻿using Firebase.Auth;
 using Firebase.Storage;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Storage.v1.Data;
-using Google.Apis.Upload;
-using Google.Cloud.Storage.V1;
-using Humanizer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder.Extensions;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Identity.Client.Extensions.Msal;
-using Microsoft.OpenApi.Writers;
-using NuGet.Packaging.Signing;
-using System.IdentityModel.Tokens.Jwt;
-using System.IO;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using VideoModel;
 using VideoServer.DTO;
 
@@ -29,16 +11,14 @@ namespace VideoServer.Controllers
     [ApiController]
     public class VideosController : ControllerBase
     {
-        private static readonly string ApiKey = "AIzaSyDwFJ1ZdiJ3wPcpqJJNsMbJg9JM3r3Nm0Q"; // Replace with your Firebase project ID
-        private static readonly string BucketName = "video-upload-e0f8d.appspot.com"; // Replace with your Firebase Storage bucket name
-        private static readonly string AuthEmail = "videoserver@gmail.com"; // Replace with your service account email
-        private static readonly string AuthPassword = "nyinyi2714";
 
+        private readonly IConfiguration _configuration;
         private readonly VideoGoldenContext _db;
         private readonly FirebaseAuthProvider _authProvider;
         private readonly FirebaseStorage _storage;
-        public VideosController(VideoGoldenContext db)
+        public VideosController(VideoGoldenContext db, IConfiguration configuration)
         {
+            _configuration = configuration;
             _db = db;
             _authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
             _storage = new FirebaseStorage(
@@ -49,7 +29,12 @@ namespace VideoServer.Controllers
                 });
         }
 
-       // [Authorize]
+        private string ApiKey => _configuration.GetValue<string>("Firebase:ApiKey");
+        private string BucketName => _configuration.GetValue<string>("Firebase:BucketName");
+        private string AuthEmail => _configuration.GetValue<string>("Firebase:AuthEmail");
+        private string AuthPassword => _configuration.GetValue<string>("Firebase:AuthPassword");
+
+        // [Authorize]
         [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [DisableRequestSizeLimit]
         [Consumes("multipart/form-data")]

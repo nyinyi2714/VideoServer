@@ -10,6 +10,12 @@
 *.userosscache
 *.sln.docstates
 
+#app.setting.json
+VideoServer/appsettings.json
+VideoServer/appsettings.Development.json
+VideoServer/appsettings.Production.json
+VideoModel/appsettings.json
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
