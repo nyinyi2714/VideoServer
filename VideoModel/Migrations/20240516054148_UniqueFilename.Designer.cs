@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VideoModel;
 
@@ -11,9 +12,11 @@ using VideoModel;
 namespace VideoModel.Migrations
 {
     [DbContext(typeof(VideoGoldenContext))]
-    partial class VideoGoldenContextModelSnapshot : ModelSnapshot
+    [Migration("20240516054148_UniqueFilename")]
+    partial class UniqueFilename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -185,8 +188,7 @@ namespace VideoModel.Migrations
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime");

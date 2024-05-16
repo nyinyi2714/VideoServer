@@ -15,6 +15,9 @@ public partial class Video
     [Unicode(false)]
     public string Url { get; set; } = null!;
 
+    [StringLength(200)]
+    public string Filename { get; set; } = null!;
+
     [Column(TypeName = "datetime")]
     public DateTime Timestamp { get; set; }
 
