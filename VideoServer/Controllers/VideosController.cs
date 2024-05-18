@@ -176,6 +176,8 @@ namespace VideoServer.Controllers
             return Ok("server running");
         }
 
+
+
         // GET: api/Videos/recent
         [HttpGet("Recent")]
         public async Task<ActionResult<IEnumerable<VideoDto>>> GetRecentVideos()
@@ -197,6 +199,31 @@ namespace VideoServer.Controllers
                 .ToListAsync();
 
             return Ok(recentVideos);
+        }
+
+        // GET: api/Videos/search/{videoTitle}
+        [HttpGet("search/{videoTitle}")]
+        public async Task<ActionResult<IEnumerable<VideoDto>>> SearchVideosByTitle(string videoTitle)
+        {
+            // Convert the search string to lowercase
+            string searchQuery = videoTitle.ToLower();
+
+            List<VideoDto> matchingVideos = await _db.Videos
+                .Where(v => v.Title.ToLower().Contains(searchQuery))
+                .Select(v => new VideoDto
+                {
+                    VideoId = v.VideoId,
+                    Url = v.Url,
+                    Title = v.Title,
+                    Description = v.Description,
+                    Timestamp = v.Timestamp,
+                    Views = v.Views,
+                    Username = v.Username,
+                })
+                .Take(25)
+                .ToListAsync();
+
+            return Ok(matchingVideos);
         }
 
         // GET: api/Videos/popular
