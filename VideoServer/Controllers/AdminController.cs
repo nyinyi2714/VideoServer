@@ -22,16 +22,23 @@ namespace VideoServer.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
-            VideoUser? identityUser = await userManager.FindByNameAsync(loginRequest.Username);
+            VideoUser? identityUser = await userManager.FindByEmailAsync(loginRequest.Email);
             if (identityUser == null)
             {
-                return Unauthorized("Incorrect Username or Password");
+                return Unauthorized("Incorrect Email or Password");
             }
 
             bool success = await userManager.CheckPasswordAsync(identityUser, loginRequest.Password);
             if (!success)
             {
-                return Unauthorized("Incorrect Username or Password");
+                return Unauthorized("Incorrect Email or Password");
+            }
+
+            string? username = await userManager.GetUserNameAsync(identityUser);
+
+            if (username == null)
+            {
+                return NotFound("Username not found");
             }
 
             JwtSecurityToken token = await jwtHandler.GetTokenAsync(identityUser);
@@ -40,7 +47,7 @@ namespace VideoServer.Controllers
             return Ok(new LoginResult
             {
                 Success = true,
-                Username = loginRequest.Username,
+                Username = username,
                 Token = jwtString
             });
 
@@ -49,26 +56,33 @@ namespace VideoServer.Controllers
         [HttpPost("Register")]
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
-            // Check if the email already exists
-            if (await userManager.FindByNameAsync(registerRequest.Username) is not null)
+            // Check if the email or username already exists
+            bool isUsernameUnique = await userManager.FindByNameAsync(registerRequest.Username) is null;
+            bool isEmailUnique = await userManager.FindByEmailAsync(registerRequest.Email) is null;
+           
+            if (!isUsernameUnique || !isEmailUnique)
             {
-                return Conflict("Username is already registered.");
+                return Conflict("Username and/or Email is already registered.");
             }
 
-
+            // Identity User for authentication
             VideoUser identityUser = new()
             {
                 UserName = registerRequest.Username,
+                Email = registerRequest.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
-
+  
             IdentityResult result = await userManager.CreateAsync(identityUser, registerRequest.Password);
 
             if (!result.Succeeded) 
             {
+                var errors = result.Errors.Select(e => e.Description);
+                // Return detailed error information
                 return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create user.");
             }
 
+            // RegisteredUser for business logic
             RegisteredUser user = new()
             {
                 Username = registerRequest.Username,

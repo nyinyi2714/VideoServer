@@ -1,5 +1,7 @@
 ﻿using Firebase.Auth;
 using Firebase.Storage;
+using Google.Apis.Upload;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VideoModel;
@@ -34,16 +36,16 @@ namespace VideoServer.Controllers
         private string AuthEmail => _configuration.GetValue<string>("Firebase:AuthEmail");
         private string AuthPassword => _configuration.GetValue<string>("Firebase:AuthPassword");
 
-        // [Authorize]
+        [Authorize]
         [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [DisableRequestSizeLimit]
         [Consumes("multipart/form-data")]
         [HttpPost("UploadVideo")]
         public async Task<IActionResult> UploadVideo(
-            IFormFile videoFile, 
-            string username, 
-            string title, 
-            string description
+            [FromForm] IFormFile videoFile,
+            [FromForm] string username,
+            [FromForm] string title,
+            [FromForm] string description
         )
         {
             try
@@ -86,7 +88,7 @@ namespace VideoServer.Controllers
                 _db.Videos.Add(newVideo);
                 await _db.SaveChangesAsync();
 
-                return Ok("Upload successful");
+                return Ok(new { uploadStatus = "successful" });
 
             }
             catch (Exception ex)
@@ -95,6 +97,7 @@ namespace VideoServer.Controllers
             }
         }
 
+        [Authorize]
         [HttpDelete("DeleteVideo/{videoId}")]
         public async Task<IActionResult> DeleteVideo(int videoId)
         {
@@ -116,7 +119,7 @@ namespace VideoServer.Controllers
                 _db.Videos.Remove(video);
                 await _db.SaveChangesAsync();
 
-                return Ok("Video deleted successfully");
+                return Ok( new { deleteStatus = "successful" });
             }
             catch (Exception ex)
             {

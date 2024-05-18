@@ -22,8 +22,8 @@ namespace VideoServer.Controllers
         [HttpGet("{username}")]
         public async Task<ActionResult<IEnumerable<UserProfile>>> GetUserProfile(
             string username, 
-            int skip = 0, 
-            int take = 10
+            int skip = 0
+ 
         )
         {
             RegisteredUser? user = await db.RegisteredUsers
@@ -36,11 +36,13 @@ namespace VideoServer.Controllers
                 return NotFound($"User with username {username} not found.");
             }
 
+            int numOfVideosToFetch = 5;
+
             // Fetch the videos related to the user, applying pagination
-            var videos = user.Videos
+            IEnumerable<VideoDto> videos = user.Videos
                .OrderByDescending(v => v.Timestamp)
-               .Skip(skip) 
-               .Take(take)
+               .Skip(skip * numOfVideosToFetch) 
+               .Take(numOfVideosToFetch)
                 .Select(v => new VideoDto 
                 {
                     VideoId = v.VideoId,
@@ -52,10 +54,13 @@ namespace VideoServer.Controllers
                     Username = v.Username
                 });
 
+            int totalVideos = user.Videos.Count;
+
             UserProfile userProfile = new()
             {
                 Username = username,
                 Videos = videos.ToList(),
+                TotalVideos = totalVideos,
             };
 
             // Return the list of VideoDto
