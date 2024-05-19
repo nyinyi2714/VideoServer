@@ -23,7 +23,6 @@ namespace VideoServer.Controllers
         public async Task<ActionResult<IEnumerable<UserProfile>>> GetUserProfile(
             string username, 
             int skip = 0
- 
         )
         {
             RegisteredUser? user = await db.RegisteredUsers
@@ -41,7 +40,7 @@ namespace VideoServer.Controllers
             // Fetch the videos related to the user, applying pagination
             IEnumerable<VideoDto> videos = user.Videos
                .OrderByDescending(v => v.Timestamp)
-               .Skip(skip * numOfVideosToFetch) 
+               .Skip(skip) 
                .Take(numOfVideosToFetch)
                 .Select(v => new VideoDto 
                 {

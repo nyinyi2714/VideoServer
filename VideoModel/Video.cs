@@ -25,7 +25,7 @@ public partial class Video
     [Unicode(false)]
     public string Title { get; set; } = null!;
 
-    [StringLength(200)]
+    [StringLength(2000)]
     [Unicode(false)]
     public string Description { get; set; } = null!;
 
