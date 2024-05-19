@@ -73,6 +73,13 @@ namespace VideoServer.Controllers
                     return NotFound($"User with username {username} not found.");
                 }
 
+                // Get current UTC time
+                DateTime utcNow = DateTime.UtcNow;
+
+                // Convert UTC time to Pacific Time
+                TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+                DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, pacificZone);
+
                 // Store the new video in the database
                 var newVideo = new Video
                 {
@@ -80,7 +87,7 @@ namespace VideoServer.Controllers
                     Filename = uniqueFilename,
                     Title = title,
                     Description = description,
-                    Timestamp = DateTime.Now,
+                    Timestamp = pacificTime,
                     Views = 0,
                     Username = username,
                 };
