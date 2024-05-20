@@ -241,29 +241,21 @@ namespace VideoServer.Controllers
             var popularVideos = await _db.Videos
                 .OrderByDescending(v => v.Views)
                 .Take(4)
+                .Select(v => new VideoDto
+                {
+                    VideoId = v.VideoId,
+                    Url = v.Url,
+                    Title = v.Title,
+                    Description = v.Description,
+                    Timestamp = v.Timestamp,
+                    Views = v.Views,
+                    Username = v.Username,
+                })
                 .ToListAsync();
 
-            List<VideoDto> popularVideosDto = [];
 
-            foreach (Video video in popularVideos)
-            {
 
-                // Construct the VideoDto object and assign the UserDto
-                var videoDto = new VideoDto
-                {
-                    VideoId = video.VideoId,
-                    Url = video.Url,
-                    Title = video.Title,
-                    Description = video.Description,
-                    Views = video.Views,
-                    Timestamp = video.Timestamp,
-                    Username = video.Username,
-                };
-
-                popularVideosDto.Add(videoDto);
-            }
-
-            return Ok(popularVideosDto);
+            return Ok(popularVideos);
         }
 
         static string GenerateUniqueFilename(string originalFilename)
